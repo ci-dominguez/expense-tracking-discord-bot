@@ -1,4 +1,5 @@
 import { Client, Events, GatewayIntentBits } from 'discord.js';
+import { expenseHandler } from './functions/expenseHandler';
 
 //Creating new Client instance with 3 intents
 const discord_client = new Client({
@@ -21,9 +22,8 @@ discord_client.on('messageCreate', async (msg) => {
 
   //Respond if msg is from guild
   if (msg.channel.type === 0) {
-    if (msg.content === 'hi!') {
-      msg.channel.send('Hello');
-    }
+    //Function receives msgs and handles if valid commands
+    await expenseHandler(msg);
   }
 });
 
