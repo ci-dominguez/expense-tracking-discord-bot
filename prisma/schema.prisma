@@ -27,7 +27,7 @@ model Bucket {
   id String @id @default(uuid())
   createdAt DateTime @default(now())
   lastUpdated DateTime @updatedAt
-  name String @default("New 🪣")
+  name String @unique @default("New 🪣")
   total Int @default(0)
   transactions Transaction[]
 }
