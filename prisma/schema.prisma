@@ -13,12 +13,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Transaction {
+model Record {
   id String @id @default(uuid())
   createdAt DateTime @default(now())
-  comment String
+  note String
   amount Int
-  transactionType String
+  recordType String
+  split Split @relation(fields: [splitId], references: [id])
+  splitId String
+}
+
+model Split{
+  id String @id @default(uuid())
+  createdAt DateTime @default(now())
+  lastUpdated DateTime @updatedAt
+  name String @unique @default("New Split")
+  total Int @default(0)
+  goal Int @default(0)
+  records Record[]
   bucket Bucket @relation(fields: [bucketId], references: [id])
   bucketId String
 }
@@ -27,7 +39,8 @@ model Bucket {
   id String @id @default(uuid())
   createdAt DateTime @default(now())
   lastUpdated DateTime @updatedAt
-  name String @unique @default("New 🪣")
+  name String @unique @default("New Bucket")
   total Int @default(0)
-  transactions Transaction[]
+  goal Int @default(0)
+  splits Split[]
 }
