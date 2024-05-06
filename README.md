@@ -32,18 +32,13 @@ This bot is **currently in a beta-ish state**.
 
 Once a correctly structured command is detected, the bot triggers specific actions to handle each task by using Prisma to interact with a PostgreSQL database.
 
-The structure is fairly straight forward, A bucket can contain multiple splits which contain transaction records of income, expenses, and transfers.
-
-> 🪣 Monthly Bills<br/>
-> 💰 Rent
-
 ## 🔮 Future
 
 The bot currently meets my needs on my private server. But a couple things are currently being worked on:
 
-1. Renaming buckets
-2. Setting/editing a bucket goal
-3. Deleting transaction records
+1. Renaming buckets and splits
+2. Editing split goal
+3. Transferring between splits and buckets
 4. Better feedback to user in chat
 
 ## 📊 Frontend UI
