@@ -12,24 +12,30 @@ This bot was built using a few really cool tools:
 
 This bot is **currently in a beta-ish state**.
 
-The bot operates by parsing through commands sent on the discord server.
+### 🪣 Buckets
 
-### Creating Transaction Records
+- **!bucket create** _name_
+- **!bucket delete/del** _name_
+- **!bucket get** _name_
 
-- **!add** _amount_ _categoryName_ --_optional comment_
-- **!remove** _amount_ _categoryName_ --_optional comment_
-  > **Example:** !add 350 Rent Funds --Pet Fee 175ea.
+> _You can have spaces in your names_<br/>
+> Example: **!bucket create Emergency Funds <br/><br/>** > _Commands are also case insensitive_<br/>
+> Example: **!bucket get emergency funds**
 
-_You can have spaces in your names and comments =}_
+### 💰 Splits
 
-### CRUD Categories/Buckets
+- **Currently being reworked**
 
-- **!create** _categoryName_
-- **!delete** _categoryName_
-- **!get** _categoryName_
-  > **Example:** !delete Rent Funds
+### 💵 Transaction Records
+
+- **Currently being reworked**
 
 Once a correctly structured command is detected, the bot triggers specific actions to handle each task by using Prisma to interact with a PostgreSQL database.
+
+The structure is fairly straight forward, A bucket can contain multiple splits which contain transaction records of income, expenses, and transfers.
+
+> 🪣 Monthly Bills<br/>
+> 💰 Rent
 
 ## 🔮 Future
 
