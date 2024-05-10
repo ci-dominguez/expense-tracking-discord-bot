@@ -19,8 +19,8 @@ discord_client.on('ready', () => {
 discord_client.on('messageCreate', async (msg) => {
   if (msg.author.bot) return;
 
-  //Respond if msg is from guild
-  if (msg.channel.type === 0) {
+  //Respond if msg is from guild. '!' is a trigger for the commands
+  if (msg.channel.type === 0 && msg.content[0] === '!') {
     //Function receives msgs and handles if valid commands
     await commandHandler(msg);
   }
