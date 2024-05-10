@@ -1,60 +1,109 @@
 import prisma from '../utils/db';
 import type { Message } from 'discord.js';
-import type { BucketCmdContent } from '../common/types';
 
 /**
- * Manages bucket commands by parsing the arguments and executing the
- * corresponding action.
+ * Creates a new bucket
  *
  * @param msg - The message object for communication
- * @param cmd - The main command string
- * @param args - The arguments passed with the command
+ * @param bucketName - The name of the new bucket
  */
-export const bucketCmdManager = async (
-  msg: Message,
-  cmd: string,
-  args: string[]
-) => {
-  const bucketArgs = parseBucketArgs(cmd, args);
-
-  //Check if valid bucket data is present before executing
-  if (!bucketArgs) {
-    msg.channel.send('No valid **bucket data** is present...');
-  } else {
-    switch (bucketArgs.subCmd) {
-      case 'create':
-        createBucket(msg, bucketArgs.bucketName);
-        break;
-      case 'delete':
-      case 'del':
-        deleteBucket(msg, bucketArgs.bucketName);
-        break;
-      case 'get':
-        getBucket(msg, bucketArgs.bucketName, true);
-        break;
-      //Handles unknown commands
-      default:
-        msg.channel.send(
-          '💬 Unknown **!bucket** command... try:\n- !bucket **create** <bucketName>\n- !bucket **delete** <bucketName>\n- !bucket **get** <bucketName>\n- !bucket **rename** <bucketName> ~<newBucketName>'
-        );
-    }
+export const createBucket = async (msg: Message, bucketName: string) => {
+  //Create the bucket
+  try {
+    await prisma.bucket.create({
+      data: {
+        name: bucketName,
+      },
+    });
+    msg.channel.send(`✅ Created 🪣 **${bucketName}**!`);
+  } catch (error) {
+    console.log('❌ Unable to create bucket: ' + error);
+    msg.channel.send('❌ Unable to create a new bucket');
   }
 };
 
 /**
- * Parses bucket command args from message content
+ * Deletes a bucket and all associated records and splits
  *
- * @param args - The arguments to parse
- * @returns BucketCmdContent
+ * @param msg - The message object for communication
+ * @param bucketName - The name of the bucket to delete
  */
-const parseBucketArgs = (cmd: string, args: string[]): BucketCmdContent => {
-  const mainCmd = cmd;
-  const subCmd = args[0];
+export const deleteBucket = async (msg: Message, bucketName: string) => {
+  try {
+    //Get bucket data including splits and records
+    const bucket = await getBucket(msg, bucketName, false);
 
-  const bucketNameIdx = args.findIndex((arg) => arg.startsWith('!')) + 2;
-  const bucketName = args.slice(bucketNameIdx).join(' ');
+    //Check if bucket exists
+    if (!bucket) {
+      msg.channel.send(`**${bucketName}** does not exist`);
+      return;
+    }
 
-  return { mainCmd, subCmd, bucketName };
+    //Delete all records in the bucket's splits
+    for (const split of bucket.splits) {
+      await prisma.record.deleteMany({
+        where: {
+          splitId: split.id,
+        },
+      });
+    }
+
+    //Delete all splits in the bucket
+    await prisma.split.deleteMany({
+      where: {
+        bucketId: bucket.id,
+      },
+    });
+
+    //Delete the bucket itself
+    await prisma.bucket.delete({ where: { id: bucket.id } });
+
+    msg.channel.send(`🚮 **${bucket.name}** has been deleted`);
+  } catch (error) {
+    console.log('❌ Unable to delete bucket: ' + error);
+    msg.channel.send(`❌ Unable to delete **${bucketName}**`);
+  }
+};
+
+/**
+ * Renames a bucket
+ *
+ * @param msg - The message object for communication
+ * @param splitName - The current name of the bucket
+ * @param newSplitName - The new name for the bucket
+ */
+export const renameBucket = async (
+  msg: Message,
+  bucketName: string,
+  newBucketName: string
+) => {
+  try {
+    //Attempt to retrieve bucket
+    const existingBucket = await getBucket(msg, bucketName, false);
+
+    //If the bucket doesn't exist then exit
+    if (!existingBucket) {
+      msg.channel.send(`❌ Bucket **${bucketName}** does not exist`);
+      return;
+    }
+
+    //Update bucket.name
+    await prisma.bucket.update({
+      where: {
+        id: existingBucket.id,
+      },
+      data: { name: newBucketName },
+    });
+
+    msg.channel.send(
+      `🔄️ **${bucketName}** has been renamed to **${newBucketName}**`
+    );
+  } catch (error) {
+    console.log('❌ Unable to rename bucket: ' + error);
+    msg.channel.send(
+      `❌ Unable to rename **${bucketName}** to **${newBucketName}**`
+    );
+  }
 };
 
 /**
@@ -63,14 +112,15 @@ const parseBucketArgs = (cmd: string, args: string[]): BucketCmdContent => {
  * @param msg - The message object for communication
  * @param bucketName - The name of the bucket to retrieve
  * @param sendMsg - Boolean indicating whether to send a message or not
- * @returns Bucket ID
+ * @returns Bucket
  */
-const getBucket = async (
+export const getBucket = async (
   msg: Message,
   bucketName: string,
   sendMsg: boolean
 ) => {
   try {
+    //Retrieve bucket and it's splits
     const bucket = await prisma.bucket.findFirst({
       where: {
         name: {
@@ -83,9 +133,10 @@ const getBucket = async (
       },
     });
 
+    //Check if bucket exists
     if (!bucket) {
       msg.channel.send(`**${bucketName}** does not exist`);
-      return undefined;
+      return;
     }
 
     //Maps an array of splits in a bucket
@@ -102,83 +153,9 @@ const getBucket = async (
       );
     }
 
-    return bucket.id;
+    return bucket;
   } catch (error) {
     console.log('Unable to retrieve bucket: ' + error);
     msg.channel.send(`Unable to retrieve **${bucketName}**`);
-  }
-};
-
-/**
- * Creates a new bucket
- *
- * @param msg - The message object for communication
- * @param bucketName - The name of the new bucket
- */
-const createBucket = async (msg: Message, bucketName: string) => {
-  try {
-    await prisma.bucket.create({
-      data: {
-        name: bucketName,
-      },
-    });
-    msg.channel.send(`✅ Created **${bucketName}**!`);
-  } catch (error) {
-    console.log('Unable to create bucket: ' + error);
-    msg.channel.send('❌ Unable to create new bucket');
-  }
-};
-
-/**
- * Deletes a bucket and all associated records and splits
- *
- * @param msg - The message object for communication
- * @param bucketName - The name of the bucket to delete
- */
-const deleteBucket = async (msg: Message, bucketName: string) => {
-  try {
-    const bucket = await prisma.bucket.findFirst({
-      where: {
-        name: {
-          equals: bucketName,
-          mode: 'insensitive',
-        },
-      },
-      include: {
-        splits: {
-          include: {
-            records: true,
-          },
-        },
-      },
-    });
-
-    if (!bucket) {
-      msg.channel.send(`**${bucketName}** does not exist`);
-      return;
-    }
-
-    for (const split of bucket.splits) {
-      await prisma.record.deleteMany({
-        where: {
-          splitId: split.id,
-        },
-      });
-    }
-
-    //Deletes all splits in the bucket
-    await prisma.split.deleteMany({
-      where: {
-        bucketId: bucket.id,
-      },
-    });
-
-    //Deletes the bucket
-    await prisma.bucket.delete({ where: { id: bucket.id } });
-
-    msg.channel.send(`✅ **${bucket.name}** has been permanently deleted`);
-  } catch (error) {
-    console.log('Unable to delete bucket: ' + error);
-    msg.channel.send(`❌ Unable to delete **${bucketName}**`);
   }
 };
