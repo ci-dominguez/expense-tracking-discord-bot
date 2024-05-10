@@ -2,13 +2,15 @@ export interface BucketCmdContent {
   mainCmd: string;
   subCmd: string;
   bucketName: string;
+  newBucketName?: string;
 }
 
 export interface SplitCmdContent {
   mainCmd: string;
   subCmd: string;
   splitName: string;
-  goal?: string;
+  newSplitName?: string;
+  goal?: number;
   bucketName?: string;
 }
 
@@ -19,4 +21,5 @@ export interface RecordCmdContent {
   splitName: string;
   newSplitName?: string;
   note: string;
+  recordType: string;
 }
