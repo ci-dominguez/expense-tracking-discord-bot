@@ -8,39 +8,72 @@ This bot was built using a few really cool tools:
 - 🔼 **[Prisma ORM](https://www.prisma.io/)**
 - 🐘 **PostgreSQL DB**
 
-## 💻 How it works
+## 💻 Commands
 
-This bot is **currently in a beta-ish state**.
+This bot is **currently in a beta-ish state**. Once a correctly structured command is detected, the bot triggers specific actions to handle each task by using Prisma to interact with a PostgreSQL database.
+
+🚩 Command Flags<br/>
+**$** - Amount of money (goal and transfer amounts)<br/>
+**>** - In (creating an item in parent)<br/>
+**>>** - To (item receiving transfer)<br/>
+**~** - New (renaming)<br/>
+**--** - Note (description for record)
+<br/>
 
 ### 🪣 Buckets
 
-- **!bucket create** _name_
-- **!bucket delete/del** _name_
-- **!bucket get** _name_
+🟢 **Create Bucket** <br/>
+!bucket create bucketName
 
-> _You can have spaces in your names_<br/>
-> Example: **!bucket create Emergency Funds <br/><br/>** > _Commands are also case insensitive_<br/>
-> Example: **!bucket get emergency funds**
+🔴 **Delete Bucket** <br/>
+!bucket delete bucketName
+
+🔭 **Show Bucket Details** <br/>
+!bucket get bucketName
+
+🔠 **Rename Bucket** <br/>
+!bucket rename bucketName ~newBucketName
+<br/><br/>
 
 ### 💰 Splits
 
-- **Currently being reworked**
+✅ **Create Split** <br/>
+!split create splitName $goal >bucketName
+
+🚮 **Delete Split** <br/>
+!split delete splitName
+
+🔭 **Show Split Details** <br/>
+!split get splitName
+
+🔠 **Rename Split** <br/>
+!split rename splitName ~newSplitName
+
+🎯 **Change Split Goal** <br/>
+!split goal splitName $newGoalAmount
+<br/><br/>
 
 ### 💵 Transaction Records
 
-- **Currently being reworked**
+🟢 **Create Income** <br/>
+!record add $amount >splitName --note
 
-Once a correctly structured command is detected, the bot triggers specific actions to handle each task by using Prisma to interact with a PostgreSQL database.
+🔴 **Create Expense** <br/>
+!record remove $amount >splitName --note
+
+🔀 **Transfer Between Splits** <br/>
+!record transfer $amount >splitName >>newSplitName --note
 
 ## 🔮 Future
 
-The bot currently meets my needs on my private server. But a couple things are currently being worked on:
+Although most base functions of the bot are completed. I'll be working on more quality-of-life features like:
 
-1. Renaming buckets and splits
-2. Editing split goal
-3. Transferring between splits and buckets
-4. Better feedback to user in chat
+1. Reminders/alerts through scheduled and stat-based pings in the server
+2. More involved tracking and statistics
+3. Better text-based feedback and visual feedback like graph and chart images
+4. Webapp to synchronize with the bot
+5. Anything else that comes up
 
-## 📊 Frontend UI
+## 📊 Web App
 
-A **react-based** UI is currently being worked on to connect with the bot and it's db. **Which will provide charts, tracking, and other responsible grown-up things.** This will allow synchronicity and flexibility across the desktop and mobile browsers and chatting with the bot on discord.
+A **react-based** webapp is currently being worked on to connect with the bot and your database. **_Which will provide charts, tracking, and other responsible grown-up things_.** This will allow synchronicity and flexibility across the desktop and mobile browsers and chatting with the bot on discord.
